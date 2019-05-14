@@ -1,5 +1,5 @@
 <?php
-$botToken = "bot" . "********************************";
+$botToken = "bot" . "******";
 
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
@@ -28,7 +28,7 @@ header("Content-Type: application/json");
 $response = '';
 $servernamedb = "ftp.bottt1.altervista.org";
 $usernamedb = "bottt1";
-$passworddb = "****************************";
+$passworddb = "******";
 $dbnamedb = "my_bottt1";
 $portdb = 21;
 $conn = mysqli_init();
@@ -233,11 +233,17 @@ if ($chatId < 0) {
     $chatId = $row["groupId"];
     $luckyId = $row["userId"];
     $lucky = $row["username"];
-    $sql1 = "UPDATE score SET score = score + 1 WHERE userId = $luckyId AND groupId = $chatId";
+    $weight = $row["weight"];
+    if ($weight == 1) {
+      $weighttext = "1 punto, che è andato a";
+    } else {
+      $weighttext = "$weight punti, che sono andati a";
+    }
+    $sql1 = "UPDATE score SET score = score + $weight WHERE userId = $luckyId AND groupId = $chatId";
     $result1 = $conn->query($sql1);
-    $sql2 = "UPDATE score SET score = score - 1 WHERE userId = $userId AND groupId = $chatId";
+    $sql2 = "UPDATE score SET score = score - $weight WHERE userId = $userId AND groupId = $chatId";
     $result2 = $conn->query($sql2);
-    $encoded = urlencode("$username è esploso! Ha perso un punto, che è andato a $lucky");
+    $encoded = urlencode("$username è esploso! Ha perso $weighttext $lucky");
     $fgc = file_get_contents("https://api.telegram.org/$botToken/sendMessage?chat_id=$chatId&text=$encoded");
   }
   $sql = "SELECT * FROM score WHERE groupId = $chatId";
@@ -665,14 +671,14 @@ if (strpos($text, "/bomb2") === 0) {
   }
   if ($bombs > 1) {
     $nbombs = floor($bombs / 2);
-    for ($i = 1; $i <= $nbombs; $i++) {
-      $messages = rand(101, 300);
-      $sql = "INSERT INTO bombs (groupId, userId, username, messages) VALUES ($chatId, $userId, '$username', $messages)";
-      $result = $conn->query($sql);
-      $sql = "UPDATE score SET bombs = bombs - 2 WHERE userId = $userId AND groupId = $chatId";
-      $result = $conn->query($sql);
-      $response = "Bombe innescate";
-    }
+    $remainder = $bombs % 2;
+    $maxmessage = $nbombs * 10 + 10;
+    $messages = rand(11, $maxmessage);
+    $sql = "INSERT INTO bombs (groupId, userId, username, messages, weight) VALUES ($chatId, $userId, '$username', $messages, $nbombs)";
+    $result = $conn->query($sql);
+    $sql = "UPDATE score SET bombs = $remainder WHERE userId = $userId AND groupId = $chatId";
+    $result = $conn->query($sql);
+    $response = "Bombe innescate";
   } else {
     $response = "Ti servono almeno 2 gettoni per innescare una bomba. Ora ne hai $bombs";
   }
