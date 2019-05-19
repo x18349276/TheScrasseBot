@@ -32,6 +32,18 @@ $passworddb = "******";
 $dbnamedb = "my_bottt1";
 $portdb = 21;
 $conn = mysqli_init();
+
+function mcd($a, $b) {
+  if ($a < $b) {
+    $a += $b;
+    $b = $a - $b;
+    $a -= $b;
+  }
+
+  if ($b == 0 || $a == $b) return $a;
+  return mcd($b, $a % $b);
+}
+
 if (!$conn) {
   $response = $response . "mysqli_init failed";
 }
@@ -1204,6 +1216,28 @@ if (strpos($text, "/countdown") === 0) {
     } else {
       $response = "Tempo rimanente per la One Hundred: $s";
     }
+  }
+}
+if (strpos($text, "/mcd") === 0) {
+  $text = str_replace("/mcd@thescrasse_bot ", "", $text);
+  $text = str_replace("/mcd ", "", $text);
+  $args = explode(" ", $text);
+  if (count(args) != 2) {
+    $response = 'Inserisci due numeri!';
+  } else {
+    $response = mcd((int)$args[0], (int)$args[1]);
+  }
+}
+if (strpos($text, "/mcm") === 0) {
+  $text = str_replace("/mcm@thescrasse_bot ", "", $text);
+  $text = str_replace("/mcm ", "", $text);
+  $args = explode(" ", $text);
+  if (count(args) != 2) {
+    $response = 'Inserisci due numeri!';
+  } else {
+    $a = (int)$args[0];
+    $b = (int)$args[1];
+    $response = $a * $b / mcd($a, $b);
   }
 }
 if ($response != '' && $usekeyboard == 1) {
